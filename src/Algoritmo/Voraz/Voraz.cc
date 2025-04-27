@@ -23,3 +23,22 @@
 Voraz::Voraz() {
 
 }
+
+/** Voraz::solve()
+  * @brief Resuelve el problema de la mochila utilizando el algoritmo voraz.
+  * @param 
+  * @return objeto de la clase Voraz
+  */
+Voraz* Voraz::solve() {
+  Punto centro = this->espacio_.centro();
+  while (this->solucion_.getSize() < this->tam_sol) {
+    Punto punto_lejano = this->puntoMasLejano(centro); 
+    // Step 6: S = S ∪ {s∗}
+    this->solucion_.addPunto(punto_lejano);
+    // Step 7: Elem = Elem − {s∗}
+    this->espacio_.removePunto(punto_lejano);
+    // Step 8: Obtener sc = centro(S)
+    centro = this->espacio_.centro();
+  }
+  return this;
+}

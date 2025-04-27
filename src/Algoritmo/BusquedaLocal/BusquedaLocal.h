@@ -14,6 +14,7 @@
 //        04/25/25 - Creación (primera versión) del código
 #ifndef C_BusquedaLocal_H
 #define C_BusquedaLocal_H
+#include "../Algoritmo.h"
 
 class BusquedaLocal {
  public:

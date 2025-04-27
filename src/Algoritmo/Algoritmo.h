@@ -20,9 +20,13 @@ class Algoritmo {
   Algoritmo();
   virtual Algoritmo* solve() = 0;
   Algoritmo* setEspacio(EspacioVectorial espacio);
+  Algoritmo* setTamSol(int tam_sol);
+  EspacioVectorial getSolucion() const;
+
  protected:
   EspacioVectorial espacio_;
-  
+  EspacioVectorial solucion_;
+  int tam_sol; // tamaño de la solución
 };
 
 #endif

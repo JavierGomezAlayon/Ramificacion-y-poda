@@ -13,6 +13,8 @@
 // Historial de revisiones
 //        04/25/25 - Creación (primera versión) del código
 #include"funciones_main/funciones_main.h"
+#include"Algoritmo/Voraz/Voraz.h"
+#include"Algoritmo/Grasp/Grasp.h"
 #include<iostream>
 
 int main(int argc, char *argv[]) {
@@ -44,6 +46,14 @@ int main(int argc, char *argv[]) {
     std::cout << "Espacio leído desde: " << fichero << std::endl;
     cout << "Número de puntos: " << espacio.getSize() << endl;
     cout << "Centro del espacio: " << espacio.centro() << endl;
+    Algoritmo *algoritmo = new Voraz();
+    algoritmo->setEspacio(espacio);
+    algoritmo->setTamSol(3);
+    algoritmo->solve();
+    EspacioVectorial solucion = algoritmo->getSolucion();
+    cout << "Solución: " << solucion.getSize() << endl;
+    cout << "Centro de la solución: " << solucion.centro() << endl;
+    cout << "Puntos de la solución: " << solucion << endl;
 
   }
 

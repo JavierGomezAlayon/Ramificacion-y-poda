@@ -34,3 +34,32 @@ Algoritmo* Algoritmo::setEspacio(EspacioVectorial espacio) {
   return this;
 }
 
+/** Algoritmo::solve()
+  * @brief Resuelve el problema.
+  * @param 
+  * @return 
+  */
+Algoritmo* Algoritmo::solve() {
+  return this;
+}
+
+/**Algoritmo::setTamSol(int tam_sol)
+  * @brief Establece el tamaño de la solución.
+  * @param tam_sol tamaño de la solución
+  * @return 
+  */
+Algoritmo* Algoritmo::setTamSol(int tam_sol) {
+  this->tam_sol = tam_sol;
+  return this;
+}
+
+/** Algoritmo::getSolucion()
+  * @brief Devuelve la solución del algoritmo.
+  * @param 
+  * @return objeto de la clase EspacioVectorial
+  */
+EspacioVectorial Algoritmo::getSolucion() const {
+  return this->solucion_;
+}
+
+

@@ -14,8 +14,9 @@
 //        04/25/25 - Creación (primera versión) del código
 #ifndef C_Grasp_H
 #define C_Grasp_H
+#include "../Algoritmo.h"
 
-class Grasp {
+class Grasp : public Algoritmo {
  public:
   Grasp();
  private:
