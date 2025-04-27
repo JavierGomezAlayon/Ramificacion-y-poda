@@ -18,6 +18,7 @@
 class Voraz {
  public:
   Voraz();
+  
  private:
  
 };

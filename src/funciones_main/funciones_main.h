@@ -17,11 +17,16 @@
 
 #include<iostream>
 #include<string>
-
+#include<filesystem> // para leer directorios
+#include<fstream> // para leer ficheros
+#include<vector>
+#include"../EspacioVectorial/EspacioVectorial.h"
+using namespace std;
+namespace fs = std::filesystem;
 
 struct Dato {
   bool correcto;
-  std::string fichero;
+  string directorio;
 };
 
 Dato recoger_parametro(int argc, char *argv[]);
@@ -29,5 +34,7 @@ void mostrar_ayuda();
 void mostrar_ayuda_resumida();
 void menu();
 void mostrar_ayuda_menu();
+EspacioVectorial leer_fichero(const string &directorio);
+vector<string> leer_directorio(const string &directorio);
 
 #endif

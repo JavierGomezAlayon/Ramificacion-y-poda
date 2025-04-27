@@ -1,0 +1,29 @@
+// Universidad de La Laguna
+// Escuela Superior de Ingeniería y Tecnología
+// Grado en Ingeniería Informática
+// Asignatura: DAA
+// Curso: 3º
+// Práctica 06 : Ramificación_y_poda
+// Autor: javier Gómez Alayón
+// Correo: alu0101562445@ull.edu.es
+// Fecha: 04/25/25
+// Archivo DatosProblema.h: Declaración del struct
+//        En este fichero se declara las funciones que se utilizan en el main.cc
+//
+// Historial de revisiones
+//        04/25/25 - Creación (primera versión) del código
+
+#ifndef C_DatosProblema_H
+#define C_DatosProblema_H
+#include <vector>
+using namespace std;
+
+// no creo que se utilice
+struct DatosProblema {
+  int n;
+  vector<int> pesos;
+  vector<int> beneficios;
+  int capacidad;
+};
+
+#endif

@@ -13,7 +13,7 @@ CXX = g++						# The C++ compiler command
 CXXFLAGS = -std=c++17 -O0 -g -Wall	  # The C++ compiler options (preserve debug symbols and No optimization)
 LDFLAGS =						# The linker options (if any)
 OBJS = *.cc
-PROGRAM = Ramificación_y_poda
+PROGRAM = ramificación_y_poda
 PARAM = 
 
 # Se busca todos los .cc del directorio src/ 

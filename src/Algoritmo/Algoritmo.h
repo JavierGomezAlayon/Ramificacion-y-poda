@@ -14,12 +14,15 @@
 //        04/25/25 - Creación (primera versión) del código
 #ifndef C_Algoritmo_H
 #define C_Algoritmo_H
-
+#include "../EspacioVectorial/EspacioVectorial.h"
 class Algoritmo {
  public:
   Algoritmo();
+  virtual Algoritmo* solve() = 0;
+  Algoritmo* setEspacio(EspacioVectorial espacio);
  private:
- 
+  EspacioVectorial espacio_;
+  
 };
 
 #endif

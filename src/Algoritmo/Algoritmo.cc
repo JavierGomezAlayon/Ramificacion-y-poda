@@ -23,3 +23,14 @@
 Algoritmo::Algoritmo() {
 
 }
+
+/** Algoritmo::setEspacio(EspacioVectorial espacio)
+  * @brief Establece el espacio vectorial del algoritmo.
+  * @param espacio objeto de la clase EspacioVectorial
+  * @return 
+  */
+Algoritmo* Algoritmo::setEspacio(EspacioVectorial espacio) {
+  this->espacio_ = espacio;
+  return this;
+}
+

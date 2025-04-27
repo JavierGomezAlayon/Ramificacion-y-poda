@@ -14,12 +14,25 @@
 //        04/25/25 - Creación (primera versión) del código
 #ifndef C_EspacioVectorial_H
 #define C_EspacioVectorial_H
+#include "../Punto/Punto.h"
 
 class EspacioVectorial {
  public:
   EspacioVectorial();
+  EspacioVectorial(const vector<vector<double>>& puntos);
+  EspacioVectorial(const vector<Punto>& puntos);
+
+  void addPunto(vector<double> punto);
+  void addPunto(const Punto& punto);
+  void removePunto(int index);
+  void removePunto(const Punto& punto);
+  int getSize() const;
+  Punto centro() const;
+  
  private:
- 
+  std::vector<Punto> puntos_;
+  int numero_dimensiones_;
+  int numero_puntos_;
 };
 
 #endif
