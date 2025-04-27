@@ -20,7 +20,7 @@ class Algoritmo {
   Algoritmo();
   virtual Algoritmo* solve() = 0;
   Algoritmo* setEspacio(EspacioVectorial espacio);
- private:
+ protected:
   EspacioVectorial espacio_;
   
 };
