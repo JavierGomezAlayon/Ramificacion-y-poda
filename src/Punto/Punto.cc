@@ -71,3 +71,20 @@ int Punto::getNumeroDimensiones() const {
 std::vector<double> Punto::getCoordenadas() const {
   return this->coordenadas_;
 }
+
+/** Punto::operator<<(ostream& os, const Punto& punto)
+  * @brief Sobrecarga del operador << para imprimir un punto.
+  * @param os objeto de salida
+  * @param punto objeto de la clase Punto
+  * @return objeto de salida
+  */
+std::ostream& operator<<(std::ostream& os, const Punto& punto) {
+  os << "(";
+  os << fixed << setprecision(2) << punto.coordenadas_[0];
+  for (int i = 1; i < punto.coordenadas_.size(); i++) {
+    os << ", ";
+    os << punto.coordenadas_[i];
+  }
+  os << ")";
+  return os;
+}

@@ -16,6 +16,7 @@
 #define C_Punto_H
 #include<vector>
 #include<iostream>
+#include<iomanip>
 #include<cmath>
 using namespace std;
 class Punto {
@@ -25,6 +26,7 @@ class Punto {
   double Distancia(const Punto& otro) const;
   int getNumeroDimensiones() const;
   vector<double> getCoordenadas() const;
+  friend std::ostream& operator<<(std::ostream& os, const Punto& punto);
 
  private:
   std::vector<double> coordenadas_;

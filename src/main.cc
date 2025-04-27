@@ -42,6 +42,8 @@ int main(int argc, char *argv[]) {
     }
     // Aquí puedes realizar operaciones con el espacio leído
     std::cout << "Espacio leído desde: " << fichero << std::endl;
+    cout << "Número de puntos: " << espacio.getSize() << endl;
+    cout << "Centro del espacio: " << espacio.centro() << endl;
 
   }
 

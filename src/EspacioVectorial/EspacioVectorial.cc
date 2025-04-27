@@ -21,7 +21,9 @@
   * @return objeto de la clase EspacioVectorial
   */
 EspacioVectorial::EspacioVectorial() {
-
+  this->numero_puntos_ = 0;
+  this->numero_dimensiones_ = 0;
+  this->puntos_.clear();
 }
 
 /** EspacioVectorial::EspacioVectorial(const vector<vector<double>>& puntos)
@@ -75,6 +77,12 @@ EspacioVectorial::EspacioVectorial(const vector<Punto>& puntos) {
 void EspacioVectorial::addPunto(vector<double> punto) {
   if (punto.size() != this->numero_dimensiones_) {
     throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
+  } 
+  if (punto.empty()) {
+    throw std::invalid_argument("Error: El vector de coordenadas está vacío");
+  }
+  if (this->numero_puntos_ == 0) {
+    this->numero_dimensiones_ = punto.size();
   }
   Punto nuevo_punto(punto);
   this->puntos_.push_back(nuevo_punto);
@@ -90,6 +98,9 @@ void EspacioVectorial::addPunto(vector<double> punto) {
 void EspacioVectorial::addPunto(const Punto& punto) {
   if (punto.getNumeroDimensiones() != this->numero_dimensiones_) {
     throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
+  }
+  if (this->numero_puntos_ == 0) {
+    this->numero_dimensiones_ = punto.getNumeroDimensiones();
   }
   this->puntos_.push_back(punto);
   this->numero_puntos_++;
