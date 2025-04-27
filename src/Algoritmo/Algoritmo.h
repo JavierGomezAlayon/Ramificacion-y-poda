@@ -22,6 +22,7 @@ class Algoritmo {
   Algoritmo* setEspacio(EspacioVectorial espacio);
   Algoritmo* setTamSol(int tam_sol);
   EspacioVectorial getSolucion() const;
+  Algoritmo* reset();
 
  protected:
   EspacioVectorial espacio_;

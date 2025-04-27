@@ -57,3 +57,4 @@ Punto Voraz::puntoMasLejano(const Punto& centro) {
   }
   return punto_mas_lejano;
 }
+

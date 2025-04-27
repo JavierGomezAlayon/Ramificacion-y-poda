@@ -62,4 +62,16 @@ EspacioVectorial Algoritmo::getSolucion() const {
   return this->solucion_;
 }
 
+/** Algoritmo::reset()
+  * @brief Resetea el algoritmo.
+  * @param 
+  * @return objeto de la clase Algoritmo
+  */
+Algoritmo* Algoritmo::reset() {
+  this->espacio_ = EspacioVectorial();
+  this->solucion_ = EspacioVectorial();
+  this->tam_sol = 0;
+  return this;
+}
+
 

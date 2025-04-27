@@ -19,8 +19,11 @@
 class Grasp : public Algoritmo {
  public:
   Grasp();
+  Grasp* solve() override;
+  Grasp* setTamLista(int tam_lista); 
  private:
- 
+  Punto puntoMasLejano(Punto centro);
+  int tam_lista_;
 };
 
 #endif

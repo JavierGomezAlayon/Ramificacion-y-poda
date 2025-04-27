@@ -19,15 +19,16 @@
 
 int main(int argc, char *argv[]) {
   //Compruebo si se han introducido los argumentos necesarios
+  srand(time(0));
   vector<string> ficheros;
   try {
     Dato datos = recoger_parametro(argc, argv);
     ficheros = leer_directorio(datos.directorio);
-  } catch (std::invalid_argument &e) {
-    std::cerr << e.what() << std::endl;
+  } catch (invalid_argument &e) {
+    cerr << e.what() << endl;
     return 1;
-  } catch (std::out_of_range &e) {
-    std::cerr << e.what() << std::endl;
+  } catch (out_of_range &e) {
+    cerr << e.what() << endl;
     return 1;
   }
   
@@ -35,26 +36,37 @@ int main(int argc, char *argv[]) {
     EspacioVectorial espacio;
     try {
       espacio = leer_fichero(fichero);
-    } catch (std::invalid_argument &e) {
-      std::cerr << e.what() << std::endl;
+    } catch (invalid_argument &e) {
+      cerr << e.what() << endl;
       return 1;
-    } catch (std::out_of_range &e) {
-      std::cerr << e.what() << std::endl;
+    } catch (out_of_range &e) {
+      cerr << e.what() << endl;
       return 1;
     }
     // Aquí puedes realizar operaciones con el espacio leído
-    std::cout << "Espacio leído desde: " << fichero << std::endl;
-    cout << "Número de puntos: " << espacio.getSize() << endl;
-    cout << "Centro del espacio: " << espacio.centro() << endl;
+    cout << "---------------------------------------------------------" << endl;
+    cout << "Espacio leído desde: " << fichero << endl;
+    cout << "---------------------------------------------------------" << endl;
+    cout << "Voraz" << endl;
     Algoritmo *algoritmo = new Voraz();
-    algoritmo->setEspacio(espacio);
-    algoritmo->setTamSol(3);
-    algoritmo->solve();
-    EspacioVectorial solucion = algoritmo->getSolucion();
-    cout << "Solución: " << solucion.getSize() << endl;
-    cout << "Centro de la solución: " << solucion.centro() << endl;
-    cout << "Puntos de la solución: " << solucion << endl;
-
+    for (int i = 2; i <= 5; i++) {
+      EspacioVectorial solucion = algoritmo->setEspacio(espacio)->setTamSol(i)->solve()->getSolucion();
+      cout << "Solución: \n" << solucion << endl;
+      algoritmo->reset();
+    }
+    delete algoritmo;
+    cout << "---------------------------------------------------------" << endl;
+    cout << "GRASP"<< endl;
+    algoritmo = new Grasp();
+    for (int i = 2; i <= 5; i++) {
+      for (int j = 2; j <= 3; j++) {
+        dynamic_cast<Grasp*>(algoritmo->setEspacio(espacio))->setTamLista(j)->setTamSol(i);
+        EspacioVectorial solucion = algoritmo->solve()->getSolucion();
+        cout << "Solución: \n" << solucion << endl;
+        algoritmo->reset();
+      }
+    }
+    delete algoritmo; 
   }
 
 
