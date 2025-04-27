@@ -21,14 +21,15 @@ class EspacioVectorial {
   EspacioVectorial();
   EspacioVectorial(const vector<vector<double>>& puntos);
   EspacioVectorial(const vector<Punto>& puntos);
-
+  const Punto& operator[](int index) const;
   void addPunto(vector<double> punto);
   void addPunto(const Punto& punto);
   void removePunto(int index);
   void removePunto(const Punto& punto);
   int getSize() const;
   Punto centro() const;
-  
+  friend std::ostream& operator<<(std::ostream& os, const EspacioVectorial& espacio);
+    
  private:
   std::vector<Punto> puntos_;
   int numero_dimensiones_;

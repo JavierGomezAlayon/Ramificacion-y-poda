@@ -33,12 +33,27 @@ Voraz* Voraz::solve() {
   Punto centro = this->espacio_.centro();
   while (this->solucion_.getSize() < this->tam_sol) {
     Punto punto_lejano = this->puntoMasLejano(centro); 
-    // Step 6: S = S ∪ {s∗}
     this->solucion_.addPunto(punto_lejano);
-    // Step 7: Elem = Elem − {s∗}
     this->espacio_.removePunto(punto_lejano);
-    // Step 8: Obtener sc = centro(S)
     centro = this->espacio_.centro();
   }
   return this;
+}
+
+/** Voraz::puntoMasLejano(const Punto& centro)
+  * @brief Devuelve el punto más lejano al centro.
+  * @param centro objeto de la clase Punto
+  * @return objeto de la clase Punto
+  */
+Punto Voraz::puntoMasLejano(const Punto& centro) {
+  double distancia_maxima = 0;
+  Punto punto_mas_lejano;
+  for (int i = 0; i < this->espacio_.getSize(); i++) {
+    double distancia = this->espacio_[i].Distancia(centro);
+    if (distancia > distancia_maxima) {
+      distancia_maxima = distancia;
+      punto_mas_lejano = this->espacio_[i];
+    }
+  }
+  return punto_mas_lejano;
 }

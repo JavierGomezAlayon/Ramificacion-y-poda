@@ -96,11 +96,10 @@ void EspacioVectorial::addPunto(vector<double> punto) {
   * @throw std::out_of_range si el número de dimensiones no es el mismo para todos los puntos
   */
 void EspacioVectorial::addPunto(const Punto& punto) {
-  if (punto.getNumeroDimensiones() != this->numero_dimensiones_) {
-    throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
-  }
   if (this->numero_puntos_ == 0) {
     this->numero_dimensiones_ = punto.getNumeroDimensiones();
+  } else if (punto.getNumeroDimensiones() != this->numero_dimensiones_) {
+    throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
   }
   this->puntos_.push_back(punto);
   this->numero_puntos_++;
@@ -165,4 +164,29 @@ Punto EspacioVectorial::centro() const {
   }
   Punto centro(coordenadas);
   return centro;
+}
+
+/** EspacioVectorial::operator<<(ostream& os, const EspacioVectorial& espacio)
+  * @brief Sobrecarga del operador << para imprimir el espacio vectorial.
+  * @param os objeto de la clase ostream
+  * @param espacio objeto de la clase EspacioVectorial
+  * @return objeto de la clase ostream
+  */
+std::ostream& operator<<(std::ostream& os, const EspacioVectorial& espacio) {
+  for (int i = 0; i < espacio.numero_puntos_; i++) {
+    os << espacio.puntos_[i] << std::endl;
+  }
+  return os;
+}
+
+/** EspacioVectorial::operator[](int index)
+  * @brief Sobrecarga del operador [] para acceder a los puntos del espacio vectorial.
+  * @param index índice del punto
+  * @return objeto de la clase Punto
+  */
+const Punto& EspacioVectorial::operator[](int index) const {
+  if (index < 0 || index >= this->numero_puntos_) {
+    throw std::out_of_range("Error: El índice está fuera de rango");
+  }
+  return this->puntos_[index];
 }
