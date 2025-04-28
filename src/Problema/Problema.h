@@ -27,6 +27,7 @@ struct Resultado {
   int dimensiones;
   int tam_sol;
   int tam_lista;
+  int iter;  // preguntar que es
   double z;
   long double tiempo;
   EspacioVectorial espacio;

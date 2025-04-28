@@ -92,6 +92,7 @@ vector<Resultado>& Problema::get_resultados() {
   resultado.tiempo = tiempo.count();
   resultado.num_puntos = this->espacio_.getSize();
   resultado.tam_lista = candidatos_grasp;
+  resultado.iter = 10;
   resultado.type = 1;
   resultado.tam_sol = tam_sol;
   this->resultados_.push_back(resultado);
@@ -168,10 +169,13 @@ vector<Resultado>& Problema::get_resultados() {
       if (a.num_puntos == b.num_puntos) {
         if (a.dimensiones == b.dimensiones) {
           if (a.tam_sol == b.tam_sol) {
-            if (a.tam_lista == b.tam_lista) {
-              return a.z < b.z;
+            if (a.iter == b.iter) {
+              if (a.tam_lista == b.tam_lista) {
+                return a.z < b.z;
+              }
+              return a.tam_lista < b.tam_lista;
             }
-            return a.tam_lista < b.tam_lista;
+            return a.iter < b.iter;
           }
           return a.tam_sol < b.tam_sol;
         }
