@@ -207,3 +207,15 @@ double EspacioVectorial::getZ() const {
   }
   return distancia;
 }
+
+string EspacioVectorial::ids() const {
+  int size = this->puntos_.size();
+  if (size == 0) { return ""; }
+  string ids = "";
+  for (int i = 0; i < size - 1; i++) {
+    ids += to_string(this->puntos_[i].getId());
+    ids += ", ";
+  }
+  ids += to_string(this->puntos_[size - 1].getId());
+  return ids;
+}

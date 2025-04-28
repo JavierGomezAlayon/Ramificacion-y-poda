@@ -30,6 +30,7 @@ class EspacioVectorial {
   Punto centro() const;
   double getZ() const;
   friend std::ostream& operator<<(std::ostream& os, const EspacioVectorial& espacio);
+  string ids() const;
     
  private:
   std::vector<Punto> puntos_;

@@ -16,6 +16,7 @@
 #include"Algoritmo/Voraz/Voraz.h"
 #include"Algoritmo/Grasp/Grasp.h"
 #include"Algoritmo/BusquedaLocal/BusquedaLocal.h"
+#include"Problema/Problema.h"
 #include<iostream>
 
 int main(int argc, char *argv[]) {
@@ -34,10 +35,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   
-  for (const auto &fichero : ficheros) {
-    EspacioVectorial espacio;
+  EspacioVectorial espacio; 
+  Problema problema;
+  for (const auto &fichero : ficheros) { // por cada fichero
     try {
       espacio = leer_fichero(fichero);
+      cout << fichero << endl;
     } catch (invalid_argument &e) {
       cerr << e.what() << endl;
       return 1;
@@ -45,42 +48,14 @@ int main(int argc, char *argv[]) {
       cerr << e.what() << endl;
       return 1;
     }
-    // Aquí puedes realizar operaciones con el espacio leído
-    cout << "---------------------------------------------------------" << endl;
-    cout << "Espacio leído desde: " << fichero << endl;
-    cout << "---------------------------------------------------------" << endl;
-    cout << "Voraz" << endl;
-    Algoritmo *algoritmo = new Voraz();
-    Algoritmo *algoritmo2 = new BusquedaLocal();
-    for (int i = 2; i <= 5; i++) {
-      EspacioVectorial solucion = algoritmo->setEspacio(espacio)->setTamSol(i)->solve()->getSolucion();
-      cout << "Solución: \n" << solucion << endl;
-      cout << "Busqueda Local" << endl;
-      dynamic_cast<BusquedaLocal*>(algoritmo2->setEspacio(espacio))->setSolucion(solucion)->solve();
-      EspacioVectorial solucion_busqueda = algoritmo2->getSolucion();
-      algoritmo2->reset();
-      algoritmo->reset();
-    }
-    delete algoritmo;
-    cout << "---------------------------------------------------------" << endl;
-    cout << "GRASP"<< endl;
-    algoritmo = new Grasp();
-    for (int i = 2; i <= 5; i++) {
-      for (int j = 2; j <= 3; j++) {
-        dynamic_cast<Grasp*>(algoritmo->setEspacio(espacio))->setTamLista(j)->setTamSol(i);
-        EspacioVectorial solucion = algoritmo->solve()->getSolucion();
-        cout << "Solución: \n" << solucion << endl;
-        cout << "Busqueda Local" << endl;
-        dynamic_cast<BusquedaLocal*>(algoritmo2->setEspacio(espacio))->setSolucion(solucion)->solve();
-        EspacioVectorial solucion_busqueda = algoritmo2->getSolucion();
-        algoritmo2->reset();
-        algoritmo->reset();
+    problema.set_espacio(espacio)->set_fichero(fichero.substr(5));
+    for (int i = 2; i <= 5; i++) { // posibles tamaño de soluciones
+      problema.voraz(i);
+      for (int j = 2; j <= 3; j++) { // posibles tamaño de listas de candidatos (Grasp)
+        problema.grasp(i, j);
       }
     }
-    delete algoritmo; 
-    delete algoritmo2;
   }
-
-
+  problema.mostrar_resultados();
   return 0;
 }

@@ -67,7 +67,7 @@ BusquedaLocal* BusquedaLocal::solve() {
       espacio_size = this->espacio_.getSize();
       solucion_size = this->solucion_.getSize();
       zSolucion = this->solucion_.getZ();
-      cout << "intercambio: " << punto_cercano.getId() << " y " << punto_lejano.getId() << " con Z = " << zSolucion << endl;
+      // cout << "intercambio: " << punto_cercano.getId() << " y " << punto_lejano.getId() << " con Z = " << zSolucion << endl;
     }
   } while (mejor_coste > 0);
   return this;

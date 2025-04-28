@@ -17,16 +17,42 @@
 #include"../EspacioVectorial/EspacioVectorial.h"
 #include"../Algoritmo/Voraz/Voraz.h"
 #include"../Algoritmo/Grasp/Grasp.h"
+#include"../Algoritmo/BusquedaLocal/BusquedaLocal.h"
+#include<algorithm>
+#include<chrono>
+
+struct Resultado {
+  string fichero;
+  int num_puntos;
+  int dimensiones;
+  int tam_sol;
+  int tam_lista;
+  double z;
+  long double tiempo;
+  EspacioVectorial espacio;
+  int type; // 0: Voraz, 1: Grasp
+};
 
 
 class Problema {
  public:
   Problema();
-  Problema& setEspacio(const EspacioVectorial& espacio);
-  Problema& getSolucion(int index);
- private:
+  Problema(EspacioVectorial espacio_vectorial);
+  vector<Resultado>& get_resultados();
+  Problema* grasp(int tam_sol ,int candidatos_grasp);
+  Problema* voraz(int tam_sol);
+  Problema* set_espacio(EspacioVectorial espacio_vectorial);
+  Problema* set_fichero(string fichero);
+  Problema* mostrar_resultados();
+  Problema* resultados_clear();
+ private: 
+  void mostrar_resultados_voraz(vector<Resultado>& resultados);
+  void mostrar_resultados_grasp(vector<Resultado>& resultados);
   EspacioVectorial espacio_;
-  vector<Algoritmo*> algoritmos_;
+  vector<Algoritmo*> algoritmos_; // 0: voraz, 1: grasp, 2: busqueda local
+  vector<Resultado> resultados_;
+  string fichero_;
 };
+
 
 #endif

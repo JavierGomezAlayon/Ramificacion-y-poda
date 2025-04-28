@@ -91,7 +91,7 @@ std::ostream& operator<<(std::ostream& os, const Punto& punto) {
   return os;
 }
 
-unsigned int Punto::getId() {
+unsigned int Punto::getId() const {
   return this->id_;
 }
 
