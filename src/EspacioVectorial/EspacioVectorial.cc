@@ -177,6 +177,7 @@ std::ostream& operator<<(std::ostream& os, const EspacioVectorial& espacio) {
   for (int i = 0; i < espacio.numero_puntos_; i++) {
     os << espacio.puntos_[i] << std::endl;
   }
+  os << "Z = " << espacio.getZ() << std::endl;
   return os;
 }
 

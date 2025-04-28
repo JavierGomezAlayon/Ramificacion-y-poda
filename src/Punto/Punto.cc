@@ -94,3 +94,7 @@ std::ostream& operator<<(std::ostream& os, const Punto& punto) {
 unsigned int Punto::getId() {
   return this->id_;
 }
+
+void Punto::setId(unsigned int id) {
+  this->id_ = id;
+} 

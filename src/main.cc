@@ -15,11 +15,13 @@
 #include"funciones_main/funciones_main.h"
 #include"Algoritmo/Voraz/Voraz.h"
 #include"Algoritmo/Grasp/Grasp.h"
+#include"Algoritmo/BusquedaLocal/BusquedaLocal.h"
 #include<iostream>
 
 int main(int argc, char *argv[]) {
   //Compruebo si se han introducido los argumentos necesarios
-  srand(time(0));
+  //srand(time(0));
+  srand(0);
   vector<string> ficheros;
   try {
     Dato datos = recoger_parametro(argc, argv);
@@ -49,9 +51,14 @@ int main(int argc, char *argv[]) {
     cout << "---------------------------------------------------------" << endl;
     cout << "Voraz" << endl;
     Algoritmo *algoritmo = new Voraz();
+    Algoritmo *algoritmo2 = new BusquedaLocal();
     for (int i = 2; i <= 5; i++) {
       EspacioVectorial solucion = algoritmo->setEspacio(espacio)->setTamSol(i)->solve()->getSolucion();
       cout << "Solución: \n" << solucion << endl;
+      cout << "Busqueda Local" << endl;
+      dynamic_cast<BusquedaLocal*>(algoritmo2->setEspacio(espacio))->setSolucion(solucion)->solve();
+      EspacioVectorial solucion_busqueda = algoritmo2->getSolucion();
+      algoritmo2->reset();
       algoritmo->reset();
     }
     delete algoritmo;
@@ -63,10 +70,15 @@ int main(int argc, char *argv[]) {
         dynamic_cast<Grasp*>(algoritmo->setEspacio(espacio))->setTamLista(j)->setTamSol(i);
         EspacioVectorial solucion = algoritmo->solve()->getSolucion();
         cout << "Solución: \n" << solucion << endl;
+        cout << "Busqueda Local" << endl;
+        dynamic_cast<BusquedaLocal*>(algoritmo2->setEspacio(espacio))->setSolucion(solucion)->solve();
+        EspacioVectorial solucion_busqueda = algoritmo2->getSolucion();
+        algoritmo2->reset();
         algoritmo->reset();
       }
     }
     delete algoritmo; 
+    delete algoritmo2;
   }
 
 
