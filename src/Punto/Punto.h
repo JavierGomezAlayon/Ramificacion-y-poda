@@ -18,18 +18,22 @@
 #include<iostream>
 #include<iomanip>
 #include<cmath>
+#include<limits>
 using namespace std;
 class Punto {
  public:
   Punto();
-  Punto(const std::vector<double>& coordenadas);
+  Punto(const std::vector<double>& coordenadas, unsigned int id ); // poner el límite de unsigned int igualado a id.
   double Distancia(const Punto& otro) const;
   int getNumeroDimensiones() const;
   vector<double> getCoordenadas() const;
   friend std::ostream& operator<<(std::ostream& os, const Punto& punto);
+  unsigned int getId();
+  void setId(unsigned int id);
 
  private:
   std::vector<double> coordenadas_;
+  unsigned int id_;
   
 };
 

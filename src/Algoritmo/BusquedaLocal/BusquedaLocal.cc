@@ -23,3 +23,33 @@
 BusquedaLocal::BusquedaLocal() {
 
 }
+
+/** BusquedaLocal::solve()
+  * @brief Hace la busqueda local swap cambiando los puntos de la solución por puntos del espacio
+  *        Mientras que mejore se sigue repitiendo el proceso.
+  * @return objeto de la clase BusquedaLocal
+  */
+BusquedaLocal* BusquedaLocal::solve() {
+  double distancia_maxima = 0;
+  Punto punto_mas_lejano;
+  double coste = 0;
+  int espacio_size = this->espacio_.getSize();
+  int solucion_size = this->solucion_.getSize();
+  EspacioVectorial solucion_aux = this->solucion_;
+  do {
+    coste = 0;
+    for (int i = 0; i < espacio_size; i++) {
+      for (int j = 0; j < solucion_size; j++) { 
+        solucion_aux.addPunto(this->espacio_[i]);
+        solucion_aux.removePunto(this->solucion_[j]);
+
+      }
+    }
+  } while (coste > 0);
+  return this;
+}
+
+BusquedaLocal* BusquedaLocal::setSolucion(EspacioVectorial& solucion) {
+  this->solucion_ = solucion;
+}
+

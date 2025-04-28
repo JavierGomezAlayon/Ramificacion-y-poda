@@ -43,7 +43,7 @@ EspacioVectorial::EspacioVectorial(const vector<vector<double>>& puntos) {
     if (puntos[i].size() != this->numero_dimensiones_) {
       throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
     }
-    Punto punto(puntos[i]);
+    Punto punto(puntos[i], i + 1);
     this->puntos_.push_back(punto);
   }
 }
@@ -65,6 +65,7 @@ EspacioVectorial::EspacioVectorial(const vector<Punto>& puntos) {
       throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
     }
     this->puntos_.push_back(puntos[i]);
+    this->puntos_[i].setId(i + 1);
   }
 }
 
@@ -74,7 +75,7 @@ EspacioVectorial::EspacioVectorial(const vector<Punto>& puntos) {
   * @return 
   * @throw std::out_of_range si el número de dimensiones no es el mismo para todos los puntos
   */
-void EspacioVectorial::addPunto(vector<double> punto) {
+void EspacioVectorial::addPunto(vector<double> punto, unsigned int id) {
   if (punto.size() != this->numero_dimensiones_) {
     throw std::out_of_range("Error: El número de dimensiones no es el mismo para todos los puntos");
   } 
@@ -84,7 +85,7 @@ void EspacioVectorial::addPunto(vector<double> punto) {
   if (this->numero_puntos_ == 0) {
     this->numero_dimensiones_ = punto.size();
   }
-  Punto nuevo_punto(punto);
+  Punto nuevo_punto(punto, id);
   this->puntos_.push_back(nuevo_punto);
   this->numero_puntos_++;
 }
@@ -162,7 +163,7 @@ Punto EspacioVectorial::centro() const {
   for (int j = 0; j < this->numero_dimensiones_; j++) {
     coordenadas[j] /= this->numero_puntos_;
   }
-  Punto centro(coordenadas);
+  Punto centro(coordenadas, 99);
   return centro;
 }
 
@@ -189,4 +190,19 @@ const Punto& EspacioVectorial::operator[](int index) const {
     throw std::out_of_range("Error: El índice está fuera de rango");
   }
   return this->puntos_[index];
+}
+
+/** EspacioVectorial::getZ()
+  * @brief Devuelve el resultado de la función Z : sum(sum( distancia(punto_i, punto_j) * xi * xj))
+  * @return resultado de la función Z
+  */
+double EspacioVectorial::getZ() const {
+  int size = this->puntos_.size();
+  double distancia = 0;
+  for (int i = 0; i < size ; i++) {
+    for (int j = i + 1; j < size; j++) {
+      distancia += this->puntos_[i].Distancia(this->puntos_[j]);
+    }
+  }
+  return distancia;
 }

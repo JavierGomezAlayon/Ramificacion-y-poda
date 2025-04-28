@@ -16,10 +16,13 @@
 #define C_BusquedaLocal_H
 #include "../Algoritmo.h"
 
-class BusquedaLocal {
+class BusquedaLocal : public Algoritmo {
  public:
   BusquedaLocal();
+  BusquedaLocal* solve() override;
+  BusquedaLocal* setSolucion(EspacioVectorial& solucion);
  private:
+   
  
 };
 

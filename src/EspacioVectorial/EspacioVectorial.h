@@ -22,12 +22,13 @@ class EspacioVectorial {
   EspacioVectorial(const vector<vector<double>>& puntos);
   EspacioVectorial(const vector<Punto>& puntos);
   const Punto& operator[](int index) const;
-  void addPunto(vector<double> punto);
+  void addPunto(vector<double> punto, unsigned int id); // igualarlo a infinito (limit)
   void addPunto(const Punto& punto);
   void removePunto(int index);
   void removePunto(const Punto& punto);
   int getSize() const;
   Punto centro() const;
+  double getZ() const;
   friend std::ostream& operator<<(std::ostream& os, const EspacioVectorial& espacio);
     
  private:

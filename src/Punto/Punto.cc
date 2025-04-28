@@ -31,11 +31,12 @@ Punto::Punto() {
   * @throw std::out_of_range si el número de dimensiones no es el mismo para todos los puntos
   * @throw std::invalid_argument si el vector de coordenadas está vacío
   */
-Punto::Punto(const std::vector<double>& coordenadas) {
+Punto::Punto(const std::vector<double>& coordenadas, unsigned int id) {
   if (coordenadas.empty()) {
     throw std::invalid_argument("Error: El vector de coordenadas está vacío");
   }
   this->coordenadas_ = coordenadas;
+  this->id_ = id;
 }
 
 /** Punto::Distancia(const Punto& otro)
@@ -79,7 +80,8 @@ std::vector<double> Punto::getCoordenadas() const {
   * @return objeto de salida
   */
 std::ostream& operator<<(std::ostream& os, const Punto& punto) {
-  os << "(";
+  os << "ID " << punto.id_;
+  os << ": (";
   os << fixed << setprecision(2) << punto.coordenadas_[0];
   for (int i = 1; i < punto.coordenadas_.size(); i++) {
     os << ", ";
@@ -87,4 +89,8 @@ std::ostream& operator<<(std::ostream& os, const Punto& punto) {
   }
   os << ")";
   return os;
+}
+
+unsigned int Punto::getId() {
+  return this->id_;
 }
