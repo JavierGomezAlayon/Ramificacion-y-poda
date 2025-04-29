@@ -221,7 +221,7 @@ void Problema::mostrar_resultados_voraz(vector<Resultado>& results) {
     << setw(5) << results[i].num_puntos
     << setw(5) << results[i].dimensiones
     << setw(5) << results[i].tam_sol
-    << setw(12) << results[i].z
+    << setw(12) << setprecision(2) << results[i].z
     << setw(24) << results[i].espacio.ids()
     << setw(12) << setprecision(8) << results[i].tiempo << setprecision(4)
     << endl;
@@ -289,7 +289,7 @@ void Problema::mostrar_resultados_grasp(vector<Resultado>& results) {
     // << setw(5) << results[i].iter
     << setw(5) << 10
     << setw(6) << results[i].tam_lista
-    << setw(12) << results[i].z
+    << setw(12) << setprecision(2) << results[i].z
     << setw(24) << results[i].espacio.ids()
     << setw(12) << setprecision(8) << results[i].tiempo << setprecision(4)
     << endl;
