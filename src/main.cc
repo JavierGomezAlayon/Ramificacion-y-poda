@@ -52,7 +52,9 @@ int main(int argc, char *argv[]) {
     for (int i = 2; i <= 5; i++) { // posibles tamaño de soluciones
       problema.voraz(i);
       for (int j = 2; j <= 3; j++) { // posibles tamaño de listas de candidatos (Grasp)
-        problema.grasp(i, j);
+        for (int iteraciones = 10; iteraciones <= 20; iteraciones += 10) {
+          problema.grasp(i, j, iteraciones);
+        }
       }
     }
   }

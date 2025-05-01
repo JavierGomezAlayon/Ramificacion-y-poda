@@ -61,38 +61,49 @@ vector<Resultado>& Problema::get_resultados() {
   * @brief Resuelve el problema con el algoritmo GRASP.
   * @param tam_sol: Tamaño de la solución
   * @param candidatos_grasp: Número de candidatos para el algoritmo GRASP
+  * @param iteraciones: Número de iteraciones del bucle
   * @return Problema*
   * @exception invalid_argument: Si el número de candidatos es menor que 1
   * @exception invalid_argument: Si el tamaño de la solución es menor que 1
   */
- Problema* Problema::grasp(int tam_sol ,int candidatos_grasp) {
+ Problema* Problema::grasp(int tam_sol ,int candidatos_grasp, int iteraciones) {
   if (candidatos_grasp < 1) {
     throw std::invalid_argument("El número de candidatos para el algoritmo GRASP debe ser mayor que 0");
   }
   if (tam_sol < 1) {
     throw std::invalid_argument("El tamaño de la solución debe ser mayor que 0");
   }
-  dynamic_cast<Grasp*>(this->algoritmos_[1]->setEspacio(this->espacio_))->setTamLista(candidatos_grasp)->setTamSol(tam_sol);
+  EspacioVectorial mejor_solucion;
+  double mejor_z = 0;
   auto start = chrono::high_resolution_clock::now();
-  EspacioVectorial solucion = this->algoritmos_[1]->solve()->getSolucion();
+  for (int i = 0; i < iteraciones; i++) {
+    dynamic_cast<Grasp*>(this->algoritmos_[1]->setEspacio(this->espacio_))->setTamLista(candidatos_grasp)->setTamSol(tam_sol);
+    EspacioVectorial solucion = this->algoritmos_[1]->solve()->getSolucion();
+    
+    dynamic_cast<BusquedaLocal*>(this->algoritmos_[2]->setEspacio(this->espacio_))->setSolucion(solucion)->solve();
+    EspacioVectorial solucion_busqueda = this->algoritmos_[2]->getSolucion();
 
-  dynamic_cast<BusquedaLocal*>(this->algoritmos_[2]->setEspacio(this->espacio_))->setSolucion(solucion)->solve();
-  EspacioVectorial solucion_busqueda = this->algoritmos_[2]->getSolucion();
+    if (solucion_busqueda.getZ() > mejor_z) {
+      mejor_z = solucion_busqueda.getZ();
+      mejor_solucion = solucion_busqueda;
+    }
+    
+    this->algoritmos_[2]->reset();
+    this->algoritmos_[1]->reset();
+  }
   auto end = chrono::high_resolution_clock::now();
   chrono::duration<double> tiempo = end - start;
-  this->algoritmos_[2]->reset();
-  this->algoritmos_[1]->reset();
   
   // Hago los results
   Resultado resultado;
   resultado.fichero = this->fichero_;
-  resultado.espacio = solucion_busqueda;
-  resultado.dimensiones = solucion_busqueda[0].getNumeroDimensiones();
-  resultado.z = solucion_busqueda.getZ();
+  resultado.espacio = mejor_solucion;
+  resultado.dimensiones = mejor_solucion[0].getNumeroDimensiones();
+  resultado.z = mejor_z;
   resultado.tiempo = tiempo.count();
   resultado.num_puntos = this->espacio_.getSize();
   resultado.tam_lista = candidatos_grasp;
-  resultado.iter = 10;
+  resultado.iter = iteraciones;
   resultado.type = 1;
   resultado.tam_sol = tam_sol;
   this->resultados_.push_back(resultado);
@@ -287,7 +298,7 @@ void Problema::mostrar_resultados_grasp(vector<Resultado>& results) {
     << setw(5) << results[i].dimensiones
     << setw(5) << results[i].tam_sol
     // << setw(5) << results[i].iter
-    << setw(5) << 10
+    << setw(5) << results[i].iter
     << setw(6) << results[i].tam_lista
     << setw(12) << setprecision(2) << results[i].z
     << setw(24) << results[i].espacio.ids()

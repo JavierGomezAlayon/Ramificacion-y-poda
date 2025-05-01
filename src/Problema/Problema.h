@@ -40,7 +40,7 @@ class Problema {
   Problema();
   Problema(EspacioVectorial espacio_vectorial);
   vector<Resultado>& get_resultados();
-  Problema* grasp(int tam_sol ,int candidatos_grasp);
+  Problema* grasp(int tam_sol ,int candidatos_grasp, int iteraciones);
   Problema* voraz(int tam_sol);
   Problema* set_espacio(EspacioVectorial espacio_vectorial);
   Problema* set_fichero(string fichero);
