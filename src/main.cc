@@ -51,16 +51,14 @@ int main(int argc, char *argv[]) {
     }
     problema.set_espacio(espacio)->set_fichero(fichero.substr(5));
     for (int i = 2; i <= 5; i++) { // posibles tamaño de soluciones
-      problema.voraz(i);
+      //problema.voraz(i);
       for (int j = 2; j <= 3; j++) { // posibles tamaño de listas de candidatos (Grasp)
         for (int iteraciones = 10; iteraciones <= 20; iteraciones += 10) {
-          problema.grasp(i, j, iteraciones);
-          // Solo aplicamos ramificación y poda para instancias pequeñas
-          if (espacio.getSize() <= 60) {
-            problema.ramificacion_poda(i, j, iteraciones);
-          }
+          //problema.grasp(i, j, iteraciones);
         }
       }
+      //problema.ramificacion_poda(i, 3, 20);
+      problema.ramificacion_poda(i);
     }
   }
   problema.mostrar_resultados();

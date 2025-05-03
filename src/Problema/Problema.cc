@@ -165,11 +165,8 @@ Problema* Problema::ramificacion_poda(int tam_sol, int candidatos_grasp, int ite
   // Configuramos y ejecutamos el algoritmo de Ramificación y Poda
   auto start = chrono::high_resolution_clock::now();
   RamificacionPoda* ramificacion_poda = dynamic_cast<RamificacionPoda*>(this->algoritmos_[3]->setEspacio(this->espacio_));
-  dynamic_cast<RamificacionPoda*>(ramificacion_poda->setTamSol(tam_sol))
-    ->setGraspSolution(solucion_mejorada)
-    ->setTamLista(candidatos_grasp) 
-    ->setIteraciones(iteraciones)
-    ->solve();
+  dynamic_cast<RamificacionPoda*>(ramificacion_poda->setTamSol(tam_sol))->setGraspSolution(solucion_mejorada)->setTamLista(candidatos_grasp)
+  ->setIteraciones(iteraciones)->solve();
   
   EspacioVectorial solucion = this->algoritmos_[3]->getSolucion();
   auto end = chrono::high_resolution_clock::now();
@@ -189,6 +186,48 @@ Problema* Problema::ramificacion_poda(int tam_sol, int candidatos_grasp, int ite
   resultado.num_puntos = this->espacio_.getSize();
   resultado.tam_lista = candidatos_grasp;
   resultado.iter = iteraciones;
+  resultado.type = 2;
+  resultado.tam_sol = tam_sol;
+  resultado.nodes_generated = ramificacion_poda->getNodesGenerated();
+  this->resultados_.push_back(resultado);
+  
+  return this;
+}
+
+/** Problema::ramificacion_poda()
+  * @brief Resuelve el problema con el algoritmo de Ramificación y Poda.
+  * @param tam_sol: Tamaño de la solución
+  * @param candidatos_grasp: Número de candidatos para el algoritmo GRASP inicial
+  * @param iteraciones: Número de iteraciones para GRASP
+  * @return Problema*
+  */
+ Problema* Problema::ramificacion_poda(int tam_sol) {
+  if (tam_sol < 1) {
+    throw std::invalid_argument("El tamaño de la solución debe ser mayor que 0");
+  }
+  this->algoritmos_[0]->setEspacio(this->espacio_)->setTamSol(tam_sol);
+  EspacioVectorial solucion_voraz = this->algoritmos_[0]->getSolucion();
+  
+  // Configuramos y ejecutamos el algoritmo de Ramificación y Poda
+  auto start = chrono::high_resolution_clock::now();
+  RamificacionPoda* ramificacion_poda = dynamic_cast<RamificacionPoda*>(this->algoritmos_[3]->setEspacio(this->espacio_));
+  dynamic_cast<RamificacionPoda*>(ramificacion_poda->setTamSol(tam_sol))->setGraspSolution(solucion_voraz)->solve();
+  
+  EspacioVectorial solucion = this->algoritmos_[3]->getSolucion();
+  auto end = chrono::high_resolution_clock::now();
+  chrono::duration<double> tiempo = end - start;  
+  // Reseteamos los algoritmos
+  this->algoritmos_[0]->reset();
+  this->algoritmos_[3]->reset();
+  
+  // Creamos el resultado
+  Resultado resultado;
+  resultado.fichero = this->fichero_;
+  resultado.espacio = solucion;
+  resultado.dimensiones = solucion[0].getNumeroDimensiones();
+  resultado.z = solucion.getZ();
+  resultado.tiempo = tiempo.count();
+  resultado.num_puntos = this->espacio_.getSize();
   resultado.type = 2;
   resultado.tam_sol = tam_sol;
   resultado.nodes_generated = ramificacion_poda->getNodesGenerated();
