@@ -23,6 +23,7 @@ RamificacionPoda::RamificacionPoda() {
   this->tam_lista_ = 3;  // Valor por defecto
   this->iteraciones_ = 10;  // Valor por defecto
   this->best_known_solution_value_ = 0.0;
+  this->nodes_generated_ = 0;  // Inicializar contador de nodos
 }
 
 /** RamificacionPoda::setGraspSolution()
@@ -171,6 +172,9 @@ RamificacionPoda* RamificacionPoda::solve() {
   }
   this->best_solution_ = grasp_indices;
   
+  // Reiniciar contador de nodos
+  this->nodes_generated_ = 1;  // El nodo raíz
+  
   // Pila para nodos, empezar con nodo raíz (ninguna selección, k=0)
   std::stack<std::pair<std::set<int>, int>> exploration_stack;
   exploration_stack.push({std::set<int>(), 0}); // Comenzar con conjunto vacío y k=0
@@ -217,7 +221,6 @@ RamificacionPoda* RamificacionPoda::solve() {
           for (int s : current_selected_elements) {
             contribution_to_selected += this->distance_matrix_[s][v];
           }
-          
           double sum_unselected_distances = 0;
           int count = 0;
           for (int u : this->sorted_indices_by_distance_[v]) {
@@ -227,33 +230,24 @@ RamificacionPoda* RamificacionPoda::solve() {
               count++;
             }
           }
-          
           double contribution_unselected = 0.5 * sum_unselected_distances;
           double total_estimated_contribution = contribution_to_selected + contribution_unselected;
           estimated_contributions.push_back({total_estimated_contribution, v});
         }
       }
-      
-      std::sort(estimated_contributions.begin(), estimated_contributions.end(), 
-                std::greater<std::pair<double, int>>());
-      
+      std::sort(estimated_contributions.begin(), estimated_contributions.end(), std::greater<std::pair<double, int>>());
       double upper_bound_contribution = 0;
       for (int i = 0; i < elements_to_select - number_of_selected && i < estimated_contributions.size(); i++) {
         upper_bound_contribution += estimated_contributions[i].first;
       }
-      
       double upper_bound = sum_distances_within_selected + upper_bound_contribution;
-      
       if (upper_bound < this->best_known_solution_value_) {
         continue; // Poda por cota superior
       }
-      
-      // Solución heurística: seleccionar los mejores elementos por contribución estimada
       std::vector<int> top_candidates;
       for (int i = 0; i < elements_to_select - number_of_selected && i < estimated_contributions.size(); i++) {
         top_candidates.push_back(estimated_contributions[i].second);
       }
-      
       std::set<int> heuristic_solution = current_selected_elements;
       for (int v : top_candidates) {
         heuristic_solution.insert(v);
@@ -261,23 +255,23 @@ RamificacionPoda* RamificacionPoda::solve() {
       
       double heuristic_value = this->calculateObjectiveValue(heuristic_solution);
       this->updateBestSolution(heuristic_solution, heuristic_value);
-      
-      // Ramificación: generar nodos hijos añadiendo cada elemento no seleccionado
-      // Ordenamos por contribución estimada para explorar primero los más prometedores
       for (auto& p : estimated_contributions) {
         int v = p.second;
         std::set<int> new_selected_elements = current_selected_elements;
         new_selected_elements.insert(v);
         exploration_stack.push({new_selected_elements, number_of_selected + 1});
+        this->nodes_generated_++;
       }
     }
   }
-  
-  // Construir la solución final a partir de best_solution_
   this->solucion_ = EspacioVectorial();
   for (int idx : this->best_solution_) {
     this->solucion_.addPunto(this->espacio_[idx]);
   }
   
   return this;
+}
+
+int RamificacionPoda::getNodesGenerated() const {
+  return this->nodes_generated_;
 }

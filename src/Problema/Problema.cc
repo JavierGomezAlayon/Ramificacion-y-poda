@@ -164,17 +164,16 @@ Problema* Problema::ramificacion_poda(int tam_sol, int candidatos_grasp, int ite
   
   // Configuramos y ejecutamos el algoritmo de Ramificación y Poda
   auto start = chrono::high_resolution_clock::now();
-  dynamic_cast<RamificacionPoda*>(this->algoritmos_[3]->setEspacio(this->espacio_)
-    ->setTamSol(tam_sol))
+  RamificacionPoda* ramificacion_poda = dynamic_cast<RamificacionPoda*>(this->algoritmos_[3]->setEspacio(this->espacio_));
+  dynamic_cast<RamificacionPoda*>(ramificacion_poda->setTamSol(tam_sol))
     ->setGraspSolution(solucion_mejorada)
-    ->setTamLista(candidatos_grasp)
+    ->setTamLista(candidatos_grasp) 
     ->setIteraciones(iteraciones)
     ->solve();
   
   EspacioVectorial solucion = this->algoritmos_[3]->getSolucion();
   auto end = chrono::high_resolution_clock::now();
-  chrono::duration<double> tiempo = end - start;
-  
+  chrono::duration<double> tiempo = end - start;  
   // Reseteamos los algoritmos
   this->algoritmos_[1]->reset();
   this->algoritmos_[2]->reset();
@@ -192,16 +191,14 @@ Problema* Problema::ramificacion_poda(int tam_sol, int candidatos_grasp, int ite
   resultado.iter = iteraciones;
   resultado.type = 2;
   resultado.tam_sol = tam_sol;
+  resultado.nodes_generated = ramificacion_poda->getNodesGenerated();
   this->resultados_.push_back(resultado);
   
   return this;
 }
 
-/** Problema::mostrar_resultados()
-  * @brief Muestra los results.
-  * @return Problema*
-  */
- Problema* Problema::mostrar_resultados() {
+// Corregir el error en el método mostrar_resultados
+Problema* Problema::mostrar_resultados() {
   cout << "Resultados:" << endl;
   // ordeno el vector de results por el tipo de algoritmo
   sort(this->resultados_.begin(), this->resultados_.end(), [](const Resultado& a, const Resultado& b) {
@@ -431,11 +428,10 @@ void Problema::mostrar_resultados_ramificacion_poda(vector<Resultado>& results) 
   << setw(5) << "n" 
   << setw(5) << "K" 
   << setw(5) << "m" 
-  << setw(5) << "Iter"
-  << setw(6) << "|LRC|"
   << setw(12) << "z" 
   << setw(24) << "S"
   << setw(12) << "CPU"
+  << setw(12) << "Nodos"
   << endl;
   cout << separador << endl;
 
@@ -447,11 +443,10 @@ void Problema::mostrar_resultados_ramificacion_poda(vector<Resultado>& results) 
     << setw(5) << results[i].num_puntos
     << setw(5) << results[i].dimensiones
     << setw(5) << results[i].tam_sol
-    << setw(5) << results[i].iter
-    << setw(6) << results[i].tam_lista
     << setw(12) << setprecision(2) << results[i].z
     << setw(24) << results[i].espacio.ids()
     << setw(12) << setprecision(8) << results[i].tiempo << setprecision(4)
+    << setw(12) << results[i].nodes_generated
     << endl;
   }
   cout << separador << endl;

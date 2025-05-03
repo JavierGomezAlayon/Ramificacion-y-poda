@@ -30,6 +30,7 @@ class RamificacionPoda : public Algoritmo {
   RamificacionPoda* setGraspSolution(const EspacioVectorial& grasp_solution);
   RamificacionPoda* setTamLista(int tam_lista);
   RamificacionPoda* setIteraciones(int iteraciones);
+  int getNodesGenerated() const;
 
  private:
   // Estructura para almacenar la matriz de distancias
@@ -47,6 +48,8 @@ class RamificacionPoda : public Algoritmo {
   // Parámetros para GRASP
   int tam_lista_;
   int iteraciones_;
+  // Contador de nodos generados
+  int nodes_generated_;
 
   // Métodos auxiliares
   void precomputeDistances();

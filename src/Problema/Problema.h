@@ -33,6 +33,7 @@ struct Resultado {
   long double tiempo;
   EspacioVectorial espacio;
   int type; // 0: Voraz, 1: Grasp, 2: Ramificación y Poda
+  int nodes_generated; // Número de nodos generados (solo para Ramificación y Poda)
 };
 
 
