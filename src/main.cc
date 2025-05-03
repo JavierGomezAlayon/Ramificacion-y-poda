@@ -16,6 +16,7 @@
 #include"Algoritmo/Voraz/Voraz.h"
 #include"Algoritmo/Grasp/Grasp.h"
 #include"Algoritmo/BusquedaLocal/BusquedaLocal.h"
+#include"Algoritmo/RamificacionPoda/RamificacionPoda.h"
 #include"Problema/Problema.h"
 #include<iostream>
 
@@ -54,6 +55,10 @@ int main(int argc, char *argv[]) {
       for (int j = 2; j <= 3; j++) { // posibles tamaño de listas de candidatos (Grasp)
         for (int iteraciones = 10; iteraciones <= 20; iteraciones += 10) {
           problema.grasp(i, j, iteraciones);
+          // Solo aplicamos ramificación y poda para instancias pequeñas
+          if (espacio.getSize() <= 60) {
+            problema.ramificacion_poda(i, j, iteraciones);
+          }
         }
       }
     }

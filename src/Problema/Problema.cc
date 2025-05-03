@@ -23,7 +23,8 @@
   Algoritmo* voraz = new Voraz();
   Algoritmo* grasp = new Grasp();
   Algoritmo* busqueda = new BusquedaLocal();
-  this->algoritmos_ = {voraz, grasp, busqueda};
+  Algoritmo* ramificacion_poda = new RamificacionPoda();
+  this->algoritmos_ = {voraz, grasp, busqueda, ramificacion_poda};
 }
 
 /** Problema::Problema()
@@ -35,7 +36,8 @@
   Algoritmo* voraz = new Voraz();
   Algoritmo* grasp = new Grasp();
   Algoritmo* busqueda = new BusquedaLocal();
-  this->algoritmos_ = {voraz, grasp, busqueda};
+  Algoritmo* ramificacion_poda = new RamificacionPoda();
+  this->algoritmos_ = {voraz, grasp, busqueda, ramificacion_poda};
   this->espacio_ = espacio_vectorial;
 }
 
@@ -140,6 +142,61 @@ vector<Resultado>& Problema::get_resultados() {
   return this;
 }
 
+/** Problema::ramificacion_poda()
+  * @brief Resuelve el problema con el algoritmo de Ramificación y Poda.
+  * @param tam_sol: Tamaño de la solución
+  * @param candidatos_grasp: Número de candidatos para el algoritmo GRASP inicial
+  * @param iteraciones: Número de iteraciones para GRASP
+  * @return Problema*
+  */
+Problema* Problema::ramificacion_poda(int tam_sol, int candidatos_grasp, int iteraciones) {
+  if (tam_sol < 1) {
+    throw std::invalid_argument("El tamaño de la solución debe ser mayor que 0");
+  }
+  
+  // Primero ejecutamos GRASP para obtener una solución inicial
+  dynamic_cast<Grasp*>(this->algoritmos_[1]->setEspacio(this->espacio_))->setTamLista(candidatos_grasp)->setTamSol(tam_sol);
+  EspacioVectorial solucion_grasp = this->algoritmos_[1]->solve()->getSolucion();
+  
+  // Aplicamos búsqueda local a la solución GRASP
+  dynamic_cast<BusquedaLocal*>(this->algoritmos_[2]->setEspacio(this->espacio_))->setSolucion(solucion_grasp)->solve();
+  EspacioVectorial solucion_mejorada = this->algoritmos_[2]->getSolucion();
+  
+  // Configuramos y ejecutamos el algoritmo de Ramificación y Poda
+  auto start = chrono::high_resolution_clock::now();
+  dynamic_cast<RamificacionPoda*>(this->algoritmos_[3]->setEspacio(this->espacio_)
+    ->setTamSol(tam_sol))
+    ->setGraspSolution(solucion_mejorada)
+    ->setTamLista(candidatos_grasp)
+    ->setIteraciones(iteraciones)
+    ->solve();
+  
+  EspacioVectorial solucion = this->algoritmos_[3]->getSolucion();
+  auto end = chrono::high_resolution_clock::now();
+  chrono::duration<double> tiempo = end - start;
+  
+  // Reseteamos los algoritmos
+  this->algoritmos_[1]->reset();
+  this->algoritmos_[2]->reset();
+  this->algoritmos_[3]->reset();
+  
+  // Creamos el resultado
+  Resultado resultado;
+  resultado.fichero = this->fichero_;
+  resultado.espacio = solucion;
+  resultado.dimensiones = solucion[0].getNumeroDimensiones();
+  resultado.z = solucion.getZ();
+  resultado.tiempo = tiempo.count();
+  resultado.num_puntos = this->espacio_.getSize();
+  resultado.tam_lista = candidatos_grasp;
+  resultado.iter = iteraciones;
+  resultado.type = 2;
+  resultado.tam_sol = tam_sol;
+  this->resultados_.push_back(resultado);
+  
+  return this;
+}
+
 /** Problema::mostrar_resultados()
   * @brief Muestra los results.
   * @return Problema*
@@ -151,13 +208,15 @@ vector<Resultado>& Problema::get_resultados() {
     return a.type < b.type;
   });
   // diferencio los results por el tipo de algoritmo
-  vector<int> counts(2, 0); // Para contar la cantidad de cada tipo (0: voraz, 1: grasp)
+  vector<int> counts(3, 0); // Para contar la cantidad de cada tipo (0: voraz, 1: grasp, 2: ramificación y poda)
   for (const auto& resultado : this->resultados_) {
     counts[resultado.type]++;
   }
   // divido el vector de results en 3 partes
   vector<Resultado> resultados_voraz(this->resultados_.begin(), this->resultados_.begin() + counts[0]);
   vector<Resultado> resultados_grasp(this->resultados_.begin() + counts[0], this->resultados_.begin() + counts[0] + counts[1]);
+  vector<Resultado> resultados_ramificacion_poda(this->resultados_.begin() + counts[0] + counts[1], this->resultados_.end());
+  
   // muestro los results de cada algoritmo
   if (resultados_voraz.size() > 0) {
     // ordeno los results
@@ -195,6 +254,27 @@ vector<Resultado>& Problema::get_resultados() {
       return a.num_puntos < b.num_puntos;
     });
     this->mostrar_resultados_grasp(resultados_grasp);
+  }
+  if (resultados_ramificacion_poda.size() > 0) {
+    sort(resultados_ramificacion_poda.begin(), resultados_ramificacion_poda.end(), [](const Resultado& a, const Resultado& b) {
+      if (a.num_puntos == b.num_puntos) {
+        if (a.dimensiones == b.dimensiones) {
+          if (a.tam_sol == b.tam_sol) {
+            if (a.iter == b.iter) {
+              if (a.tam_lista == b.tam_lista) {
+                return a.z < b.z;
+              }
+              return a.tam_lista < b.tam_lista;
+            }
+            return a.iter < b.iter;
+          }
+          return a.tam_sol < b.tam_sol;
+        }
+        return a.dimensiones < b.dimensiones;
+      }
+      return a.num_puntos < b.num_puntos;
+    });
+    this->mostrar_resultados_ramificacion_poda(resultados_ramificacion_poda);
   }
   return this;
 }
@@ -333,6 +413,50 @@ void Problema::mostrar_resultados_grasp(vector<Resultado>& results) {
   cout << "Fin de la tabla GRASP" << endl;
 }
 
+/** Problema::mostrar_resultados_ramificacion_poda()
+  * @brief Muestra los results del algoritmo de Ramificación y Poda.
+  * @return void
+  */
+void Problema::mostrar_resultados_ramificacion_poda(vector<Resultado>& results) {
+  int resultados_size = results.size();
+  const string separador = "-----------------------------------------------------------------------------------------------------------";
+  // Cabecera
+  cout << endl;
+  cout << separador << endl;
+  cout << "Resultados del algoritmo de Ramificación y Poda:" << endl;
+  cout << separador << endl;
+  cout << fixed << setprecision(4);
+  cout << left 
+  << setw(18) << "Problema" 
+  << setw(5) << "n" 
+  << setw(5) << "K" 
+  << setw(5) << "m" 
+  << setw(5) << "Iter"
+  << setw(6) << "|LRC|"
+  << setw(12) << "z" 
+  << setw(24) << "S"
+  << setw(12) << "CPU"
+  << endl;
+  cout << separador << endl;
+
+  // Itero sobre los datos
+  for (int i = 0; i < resultados_size; i++) {
+    cout << fixed << setprecision(4);
+    cout << left 
+    << setw(18) << results[i].fichero
+    << setw(5) << results[i].num_puntos
+    << setw(5) << results[i].dimensiones
+    << setw(5) << results[i].tam_sol
+    << setw(5) << results[i].iter
+    << setw(6) << results[i].tam_lista
+    << setw(12) << setprecision(2) << results[i].z
+    << setw(24) << results[i].espacio.ids()
+    << setw(12) << setprecision(8) << results[i].tiempo << setprecision(4)
+    << endl;
+  }
+  cout << separador << endl;
+  cout << "Fin de la tabla Ramificación y Poda" << endl;
+}
 
 /** Problema::resultados_clear()
   * @brief Limpia los results.

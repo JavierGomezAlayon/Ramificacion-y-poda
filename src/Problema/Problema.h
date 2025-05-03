@@ -18,6 +18,7 @@
 #include"../Algoritmo/Voraz/Voraz.h"
 #include"../Algoritmo/Grasp/Grasp.h"
 #include"../Algoritmo/BusquedaLocal/BusquedaLocal.h"
+#include"../Algoritmo/RamificacionPoda/RamificacionPoda.h"
 #include<algorithm>
 #include<chrono>
 
@@ -31,7 +32,7 @@ struct Resultado {
   double z;
   long double tiempo;
   EspacioVectorial espacio;
-  int type; // 0: Voraz, 1: Grasp
+  int type; // 0: Voraz, 1: Grasp, 2: Ramificación y Poda
 };
 
 
@@ -42,6 +43,7 @@ class Problema {
   vector<Resultado>& get_resultados();
   Problema* grasp(int tam_sol ,int candidatos_grasp, int iteraciones);
   Problema* voraz(int tam_sol);
+  Problema* ramificacion_poda(int tam_sol, int candidatos_grasp, int iteraciones);
   Problema* set_espacio(EspacioVectorial espacio_vectorial);
   Problema* set_fichero(string fichero);
   Problema* mostrar_resultados();
@@ -49,8 +51,9 @@ class Problema {
  private: 
   void mostrar_resultados_voraz(vector<Resultado>& resultados);
   void mostrar_resultados_grasp(vector<Resultado>& resultados);
+  void mostrar_resultados_ramificacion_poda(vector<Resultado>& resultados);
   EspacioVectorial espacio_;
-  vector<Algoritmo*> algoritmos_; // 0: voraz, 1: grasp, 2: busqueda local
+  vector<Algoritmo*> algoritmos_; // 0: voraz, 1: grasp, 2: busqueda local, 3: ramificacion y poda
   vector<Resultado> resultados_;
   string fichero_;
 };
