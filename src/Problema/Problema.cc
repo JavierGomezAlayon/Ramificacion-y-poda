@@ -343,6 +343,10 @@ Problema* Problema::ramificacion_poda(int tam_sol, int candidatos_grasp, int ite
       }
       return a.num_puntos < b.num_puntos;
     });
+    cout << endl;
+    cout << "----------------------------------------------------------------" << endl;
+    cout << endl;
+    cout << "voraz con mejora" << endl;
     this->mostrar_resultados_voraz(resultados_voraz_con_mejora);
   }
   return this;
