@@ -28,28 +28,24 @@ class RamificacionPoda : public Algoritmo {
   RamificacionPoda();
   RamificacionPoda* solve() override;
   RamificacionPoda* setGraspSolution(const EspacioVectorial& grasp_solution);
+  RamificacionPoda* setVorazSolution(const EspacioVectorial& voraz_solution);
   RamificacionPoda* setTamLista(int tam_lista);
   RamificacionPoda* setIteraciones(int iteraciones);
   int getNodesGenerated() const;
 
  private:
-  // Estructura para almacenar la matriz de distancias
   std::vector<std::vector<double>> distance_matrix_;
-  // Vector para almacenar la distancia total de cada punto a todos los demás
   std::vector<double> total_distance_to_others_;
-  // Vector de vectores para almacenar los índices ordenados por distancia para cada punto
   std::vector<std::vector<int>> sorted_indices_by_distance_;
-  // Mejor valor conocido (límite inferior)
   double best_known_solution_value_;
-  // Mejor solución encontrada
   std::set<int> best_solution_;
-  // Solución GRASP
   EspacioVectorial grasp_solution_;
   // Parámetros para GRASP
   int tam_lista_;
   int iteraciones_;
-  // Contador de nodos generados
   int nodes_generated_;
+  // Solución Voraz
+  EspacioVectorial voraz_solution_;
 
   // Métodos auxiliares
   void precomputeDistances();

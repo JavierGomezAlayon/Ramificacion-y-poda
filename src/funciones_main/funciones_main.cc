@@ -30,6 +30,7 @@ Dato recoger_parametro(int numero_argumentos, char *argv[]) {
     case 2:
       if (argv[1] == kHelp || argv[1] == kH) {
         mostrar_ayuda();
+        exit(0);
       } else {
         datos.directorio = argv[1];
       }
@@ -45,14 +46,14 @@ Dato recoger_parametro(int numero_argumentos, char *argv[]) {
 void mostrar_ayuda() {
   std::cout << "\nEste programa se encarga de realizar distintos algoritmos para la resolución del Maximum diversity problem" << std::endl;
   std::cout << "El programa recibe como argumentos el nombre del directorio que contiene todos los ficheros con los datos de entrada al problema " << std::endl;
-  std::cout << "Usage: ./busqueda_no_informada directorio.txt " << std::endl;
+  std::cout << "Usage: ./busqueda_no_informada directorio" << std::endl;
 }
 
 /**
  * @brief Muestra una ayuda resumida del programa
  */
 void mostrar_ayuda_resumida() {
-  std::cout << "\nUsage: ./busqueda_no_informada directorio.txt" << std::endl;
+  std::cout << "\nUsage: ./busqueda_no_informada directorio" << std::endl;
   std::cout << "Usa el parámetro -h para más información" << std::endl;
 }
 

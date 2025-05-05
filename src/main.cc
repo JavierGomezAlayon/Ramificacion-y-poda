@@ -25,8 +25,17 @@ int main(int argc, char *argv[]) {
   //srand(time(0));
   srand(0);
   vector<string> ficheros;
+  Dato datos;
   try {
-    Dato datos = recoger_parametro(argc, argv);
+    datos = recoger_parametro(argc, argv);
+  } catch (invalid_argument &e) {
+    cerr << e.what() << endl;
+    return 1;
+  } catch (out_of_range &e) {
+    cerr << e.what() << endl;
+    return 1;
+  }
+  try {
     ficheros = leer_directorio(datos.directorio);
   } catch (invalid_argument &e) {
     cerr << e.what() << endl;
@@ -35,7 +44,6 @@ int main(int argc, char *argv[]) {
     cerr << e.what() << endl;
     return 1;
   }
-  
   EspacioVectorial espacio; 
   Problema problema;
   for (const auto &fichero : ficheros) { // por cada fichero
@@ -51,14 +59,14 @@ int main(int argc, char *argv[]) {
     }
     problema.set_espacio(espacio)->set_fichero(fichero.substr(5));
     for (int i = 2; i <= 5; i++) { // posibles tamaño de soluciones
-      //problema.voraz(i);
+      problema.voraz(i);
+      problema.voraz_con_mejora(i);
       for (int j = 2; j <= 3; j++) { // posibles tamaño de listas de candidatos (Grasp)
         for (int iteraciones = 10; iteraciones <= 20; iteraciones += 10) {
-          //problema.grasp(i, j, iteraciones);
+          problema.grasp(i, j, iteraciones);
         }
       }
-      //problema.ramificacion_poda(i, 3, 20);
-      problema.ramificacion_poda(i);
+      problema.ramificacion_poda(i, 3, 10, true);
     }
   }
   problema.mostrar_resultados();
