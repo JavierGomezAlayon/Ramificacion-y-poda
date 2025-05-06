@@ -28,6 +28,7 @@ class Punto {
   int getNumeroDimensiones() const;
   vector<double> getCoordenadas() const;
   friend std::ostream& operator<<(std::ostream& os, const Punto& punto);
+  friend bool operator==(const Punto& p1, const Punto& p2);
   unsigned int getId() const;
   void setId(unsigned int id);
 

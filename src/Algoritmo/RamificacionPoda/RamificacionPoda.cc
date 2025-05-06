@@ -212,21 +212,34 @@ RamificacionPoda* RamificacionPoda::solve() {
   int number_of_elements = this->espacio_.getSize();
   int elements_to_select = this->tam_sol;
   
-  // Inicializar la mejor solución conocida y su valor (cota inferior LB)
-  double LB = 0.0;
+  // Inicializar la mejor solución conocida y su valor
   this->best_solution_.clear();
   this->best_known_solution_value_ = 0.0;
   this->nodes_generated_ = 0; // Reiniciar contador de nodos
   
-  // Definir estructura para almacenar los nodos de la pila
-  struct Node {
-    std::set<int> selected;   // Elementos seleccionados
-    std::set<int> unselected; // Elementos no seleccionados
-    int level;                // Nivel del nodo en el árbol de búsqueda
-  };
+  // Usar la solución voraz como cota inferior inicial (LB)
+  double LB = 0.0;
+  if (this->voraz_solution_.getSize() > 0) {
+    // Crear un conjunto con los índices de los puntos de la solución voraz
+    std::set<int> voraz_indices;
+    for (int i = 0; i < this->voraz_solution_.getSize(); ++i) {
+      const Punto& voraz_point = this->voraz_solution_[i];
+      for (int j = 0; j < number_of_elements; ++j) {
+        if (this->espacio_[j] == voraz_point) {
+          voraz_indices.insert(j);
+          break;
+        }
+      }
+    }
+    
+    // Calcular el valor objetivo de la solución voraz y usarlo como LB inicial
+    LB = this->calculateObjectiveValue(voraz_indices);
+    this->best_solution_ = voraz_indices;
+    this->best_known_solution_value_ = LB;
+  }
   
-  // Inicializar la pila con el nodo raíz
-  std::stack<Node> exploration_stack;
+  // Inicializar la cola de prioridad para los nodos (ordenada por UB descendente)
+  std::priority_queue<NodeWithBound> exploration_queue;
   
   // Crear el conjunto inicial de elementos no seleccionados
   std::set<int> all_elements;
@@ -234,20 +247,36 @@ RamificacionPoda* RamificacionPoda::solve() {
     all_elements.insert(i);
   }
   
-  // Apilar el nodo raíz (ningún elemento seleccionado, todos no seleccionados)
-  exploration_stack.push({std::set<int>(), all_elements, 0});
+  // Calcular la cota superior del nodo raíz
+  double root_UB = this->calculateUpperBound(std::set<int>(), all_elements, elements_to_select);
+  
+  // Añadir el nodo raíz a la cola de prioridad
+  exploration_queue.push({std::set<int>(), all_elements, 0, root_UB});
   this->nodes_generated_++; // Contar el nodo raíz
   
   // Bucle principal de ramificación y poda
-  while (!exploration_stack.empty()) {
-    // Extraer el nodo actual de la pila
-    Node current_node = exploration_stack.top();
-    exploration_stack.pop();
+  while (!exploration_queue.empty()) {
+    // Extraer el nodo actual con mayor cota superior (UB)
+    NodeWithBound best_node = exploration_queue.top();
+    exploration_queue.pop();
+    // Si hay más de un nodo en la cola, seleccionamos el segundo mejor
+    // Si solo hay uno, usamos ese
+    NodeWithBound current_node;
+    if (!exploration_queue.empty()) {
+      current_node = exploration_queue.top();
+      exploration_queue.pop();
+      exploration_queue.push(best_node);
+    } else {
+      current_node = best_node;
+    }
     
     std::set<int> selected = current_node.selected;
     std::set<int> unselected = current_node.unselected;
     int level = current_node.level;
-    
+    double current_UB = current_node.upper_bound;
+    if (current_UB < LB) {
+      continue; // poda
+    }
     // Caso 1: Tenemos una solución completa
     if (level == elements_to_select) {
       double objective_value = this->calculateObjectiveValue(selected);
@@ -258,33 +287,40 @@ RamificacionPoda* RamificacionPoda::solve() {
         this->best_known_solution_value_ = objective_value;
       }
     } 
-    // Caso 2: Solución parcial, calcular cota superior (UB) y decidir si ramificar
+    // Caso 2: Solución parcial, ramificar
     else {
-      // Calcular cota superior (UB)
-      double UB = this->calculateUpperBound(selected, unselected, elements_to_select);
-      
-      // Si UB >= LB, vale la pena explorar este nodo
-      if (UB >= LB) {
-        // Ordenar los elementos no seleccionados por índice para garantizar determinismo
-        std::vector<int> unselected_ordered(unselected.begin(), unselected.end());
-        std::sort(unselected_ordered.begin(), unselected_ordered.end());
-        
-        // Ramificar: generar nodos hijos añadiendo cada elemento no seleccionado
-        for (int v : unselected_ordered) {
+      // Ordenar los elementos no seleccionados por su contribución potencial a la función objetivo
+      std::vector<int> unselected_ordered(unselected.begin(), unselected.end());
+      // Para cada elemento no seleccionado, calculamos el UB del nodo hijo resultante
+      std::vector<std::pair<double, int>> node_values;
+      for (int v : unselected_ordered) {
+        // Crear nuevos conjuntos para el nodo hijo
+        std::set<int> new_selected = selected;
+        std::set<int> new_unselected = unselected;
+        // Mover el elemento v de unselected a selected
+        new_selected.insert(v);
+        new_unselected.erase(v);
+        // Calcular la cota superior para este nodo hijo
+        double child_UB = this->calculateUpperBound(new_selected, new_unselected, elements_to_select);
+        // Añadir a la lista para ordenar después
+        node_values.push_back({child_UB, v});
+      }
+      // Ordenar los nodos por cota superior descendente
+      std::sort(node_values.begin(), node_values.end(), std::greater<std::pair<double, int>>());
+      // Añadir todos los nodos que tengan UB ≥ LB a la cola de prioridad
+      for (const auto& [child_UB, v] : node_values) {
+        if (child_UB >= LB) {
           // Crear nuevos conjuntos para el nodo hijo
           std::set<int> new_selected = selected;
           std::set<int> new_unselected = unselected;
-          
           // Mover el elemento v de unselected a selected
           new_selected.insert(v);
           new_unselected.erase(v);
-          
-          // Apilar el nuevo nodo
-          exploration_stack.push({new_selected, new_unselected, level + 1});
+          // Añadir el nodo a la cola de prioridad
+          exploration_queue.push({new_selected, new_unselected, level + 1, child_UB});
           this->nodes_generated_++; // Incrementar contador de nodos
         }
       }
-      // Si UB < LB, podamos este nodo (no hacemos nada, simplemente no lo exploramos)
     }
   }
   

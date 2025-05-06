@@ -97,4 +97,25 @@ unsigned int Punto::getId() const {
 
 void Punto::setId(unsigned int id) {
   this->id_ = id;
-} 
+}
+
+/** operator==()
+  * @brief Compara si dos puntos son iguales.
+  * @param p1 Primer punto
+  * @param p2 Segundo punto
+  * @return true si tienen las mismas coordenadas e id, false en caso contrario
+  */
+bool operator==(const Punto& p1, const Punto& p2) {
+  if (p1.id_ != p2.id_) {
+    return false;
+  }
+  if (p1.coordenadas_.size() != p2.coordenadas_.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < p1.coordenadas_.size(); ++i) {
+    if (p1.coordenadas_[i] != p2.coordenadas_[i]) {
+      return false;
+    }
+  }
+  return true;
+}

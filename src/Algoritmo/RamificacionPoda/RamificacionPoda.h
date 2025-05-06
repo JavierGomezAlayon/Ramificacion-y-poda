@@ -17,11 +17,27 @@
 #include "../Algoritmo.h"
 #include "../Grasp/Grasp.h"
 #include <stack>
+#include <queue>
 #include <set>
 #include <algorithm>
 #include <limits>
 #include <vector>
 #include <utility>
+
+struct Node {
+  std::set<int> selected;   // Elementos seleccionados
+  std::set<int> unselected; // Elementos no seleccionados
+  int level;                // Nivel del nodo en el árbol de búsqueda
+};
+
+struct NodeWithBound : public Node {
+  double upper_bound;   // Cota superior (UB) del nodo
+  
+  // Operador de comparación para la cola de prioridad (orden descendente por UB)
+  bool operator<(const NodeWithBound& other) const {
+    return upper_bound < other.upper_bound;  // Ordenar en orden descendente por UB
+  }
+};
 
 class RamificacionPoda : public Algoritmo {
  public:
