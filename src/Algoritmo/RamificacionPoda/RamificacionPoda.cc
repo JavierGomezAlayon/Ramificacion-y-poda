@@ -73,6 +73,7 @@ void RamificacionPoda::precomputeDistances() {
   int number_of_elements = this->espacio_.getSize();
   
   // Inicializar la matriz de distancias
+  this->distance_matrix_.clear();  // Limpiar primero para evitar problemas de memoria
   this->distance_matrix_.resize(number_of_elements, std::vector<double>(number_of_elements, 0.0));
   
   // Calcular todas las distancias entre puntos
@@ -85,8 +86,12 @@ void RamificacionPoda::precomputeDistances() {
   }
   
   // Inicializar vectores para distancias totales e índices ordenados
+  this->total_distance_to_others_.clear();  // Limpiar para evitar problemas de memoria
   this->total_distance_to_others_.resize(number_of_elements, 0.0);
-  this->sorted_indices_by_distance_.resize(number_of_elements);
+  
+  // Inicialización segura del vector de índices ordenados
+  this->sorted_indices_by_distance_.clear();  // Limpiar primero
+  this->sorted_indices_by_distance_ = std::vector<std::vector<int>>(number_of_elements);
   
   // Calcular distancias totales y listas ordenadas para cada punto
   for (int vertex = 0; vertex < number_of_elements; vertex++) {
@@ -109,7 +114,7 @@ void RamificacionPoda::precomputeDistances() {
     std::sort(distances.begin(), distances.end(), std::greater<std::pair<double, int>>());
     
     // Almacenar los índices ordenados
-    this->sorted_indices_by_distance_[vertex].clear();
+    // No es necesario hacer clear() aquí ya que inicializamos el vector vacío arriba
     for (auto& p : distances) {
       this->sorted_indices_by_distance_[vertex].push_back(p.second);
     }
@@ -145,152 +150,154 @@ void RamificacionPoda::updateBestSolution(const std::set<int>& solution, double 
   }
 }
 
+/** RamificacionPoda::calculateUpperBound()
+  * @brief Calcula una cota superior para un estado parcial de la solución.
+  * @param selected_elements Conjunto de elementos seleccionados
+  * @param unselected_elements Conjunto de elementos no seleccionados
+  * @param elements_to_select Número total de elementos a seleccionar
+  * @return Valor de la cota superior
+  */
+double RamificacionPoda::calculateUpperBound(const std::set<int>& selected_elements, 
+                                            const std::set<int>& unselected_elements, 
+                                            int elements_to_select) {
+  // Calcular la suma de distancias entre los elementos ya seleccionados
+  double sum_distances_selected = this->calculateObjectiveValue(selected_elements);
+  
+  // Calcular una cota superior para las distancias adicionales que se pueden obtener
+  // seleccionando los elementos restantes de unselected_elements
+  
+  // Para cada par de elementos no seleccionados, calculamos su distancia
+  std::vector<double> all_remaining_distances;
+  for (int i : unselected_elements) {
+    // Distancias entre elementos seleccionados y no seleccionados
+    for (int j : selected_elements) {
+      all_remaining_distances.push_back(this->distance_matrix_[i][j]);
+    }
+    
+    // Distancias entre elementos no seleccionados
+    for (int j : unselected_elements) {
+      if (i < j) { // Evitar contar dos veces el mismo par
+        all_remaining_distances.push_back(this->distance_matrix_[i][j]);
+      }
+    }
+  }
+  
+  // Ordenar las distancias en orden descendente
+  std::sort(all_remaining_distances.begin(), all_remaining_distances.end(), std::greater<double>());
+  
+  // Calcular cuántas aristas adicionales necesitamos
+  int selected_size = selected_elements.size();
+  int total_edges_needed = (elements_to_select * (elements_to_select - 1)) / 2;
+  int current_edges = (selected_size * (selected_size - 1)) / 2;
+  int additional_edges_needed = total_edges_needed - current_edges;
+  
+  // Sumar las mayores distancias restantes (cota superior optimista)
+  double additional_distance = 0.0;
+  for (int i = 0; i < additional_edges_needed && i < all_remaining_distances.size(); i++) {
+    additional_distance += all_remaining_distances[i];
+  }
+  
+  // La cota superior es la suma de las distancias ya seleccionadas más la estimación adicional
+  return sum_distances_selected + additional_distance;
+}
+
 /** RamificacionPoda::solve()
   * @brief Resuelve el problema utilizando el algoritmo de Ramificación y Poda.
   * @return this
   */
 RamificacionPoda* RamificacionPoda::solve() {
-  // Si no tenemos una solución GRASP, la calculamos
-  if (this->grasp_solution_.getSize() == 0) {
-    Grasp grasp;
-    dynamic_cast<Grasp*>(grasp.setEspacio(this->espacio_)
-         ->setTamSol(this->tam_sol))
-         ->setTamLista(this->tam_lista_)
-         ->solve();
-    this->grasp_solution_ = grasp.getSolucion();
-  }
+  // Precomputar distancias para agilizar cálculos
   this->precomputeDistances();
+  
   int number_of_elements = this->espacio_.getSize();
   int elements_to_select = this->tam_sol;
   
-  // Inicializar cota inferior y mejor solución a un valor determinista
-  this->best_known_solution_value_ = 0.0;
+  // Inicializar la mejor solución conocida y su valor (cota inferior LB)
+  double LB = 0.0;
   this->best_solution_.clear();
+  this->best_known_solution_value_ = 0.0;
+  this->nodes_generated_ = 0; // Reiniciar contador de nodos
   
-  // Inicializar la pila con el nodo raíz (conjunto vacío, k=0)
-  std::stack<std::pair<std::set<int>, int>> exploration_stack;
-  exploration_stack.push({std::set<int>(), 0});
+  // Definir estructura para almacenar los nodos de la pila
+  struct Node {
+    std::set<int> selected;   // Elementos seleccionados
+    std::set<int> unselected; // Elementos no seleccionados
+    int level;                // Nivel del nodo en el árbol de búsqueda
+  };
+  
+  // Inicializar la pila con el nodo raíz
+  std::stack<Node> exploration_stack;
+  
+  // Crear el conjunto inicial de elementos no seleccionados
+  std::set<int> all_elements;
+  for (int i = 0; i < number_of_elements; i++) {
+    all_elements.insert(i);
+  }
+  
+  // Apilar el nodo raíz (ningún elemento seleccionado, todos no seleccionados)
+  exploration_stack.push({std::set<int>(), all_elements, 0});
   this->nodes_generated_++; // Contar el nodo raíz
   
   // Bucle principal de ramificación y poda
   while (!exploration_stack.empty()) {
-    auto current_node = exploration_stack.top(); exploration_stack.pop();
-    std::set<int> current_selected_elements = current_node.first;
-    int number_of_selected = current_node.second;
+    // Extraer el nodo actual de la pila
+    Node current_node = exploration_stack.top();
+    exploration_stack.pop();
     
-    if (number_of_selected == elements_to_select) {
-      double objective_value = this->calculateObjectiveValue(current_selected_elements);
-      this->updateBestSolution(current_selected_elements, objective_value);
-    } 
-    // Caso 2: Solución parcial, debemos decidir si ramificar o podar
-    else {
-      bool should_prune_by_dominance = false;
-      
-      if (!current_selected_elements.empty()) {
-        double min_total_distance_selected = std::numeric_limits<double>::infinity();
-        for (int s : current_selected_elements) {
-          if (this->total_distance_to_others_[s] < min_total_distance_selected) {
-            min_total_distance_selected = this->total_distance_to_others_[s];
-          }
-        }
-        
-        double max_total_distance_unselected = -std::numeric_limits<double>::infinity();
-        for (int v = 0; v < number_of_elements; v++) {
-          if (current_selected_elements.find(v) == current_selected_elements.end()) {
-            if (this->total_distance_to_others_[v] > max_total_distance_unselected) {
-              max_total_distance_unselected = this->total_distance_to_others_[v];
-            }
-          }
-        }
-        // Determinar si debemos podar
-        should_prune_by_dominance = (min_total_distance_selected < max_total_distance_unselected);
+    std::set<int> selected = current_node.selected;
+    std::set<int> unselected = current_node.unselected;
+    int level = current_node.level;
+    
+    // Caso 1: Tenemos una solución completa
+    if (level == elements_to_select) {
+      double objective_value = this->calculateObjectiveValue(selected);
+      // Actualizar la cota inferior (LB) si encontramos una mejor solución
+      if (objective_value > LB) {
+        LB = objective_value;
+        this->best_solution_ = selected;
+        this->best_known_solution_value_ = objective_value;
       }
+    } 
+    // Caso 2: Solución parcial, calcular cota superior (UB) y decidir si ramificar
+    else {
+      // Calcular cota superior (UB)
+      double UB = this->calculateUpperBound(selected, unselected, elements_to_select);
       
-      if (!should_prune_by_dominance) {
-        double sum_distances_within_selected = this->calculateObjectiveValue(current_selected_elements);
+      // Si UB >= LB, vale la pena explorar este nodo
+      if (UB >= LB) {
+        // Ordenar los elementos no seleccionados por índice para garantizar determinismo
+        std::vector<int> unselected_ordered(unselected.begin(), unselected.end());
+        std::sort(unselected_ordered.begin(), unselected_ordered.end());
         
-        // Calcular contribuciones estimadas para cada vértice no seleccionado
-        std::vector<std::pair<double, int>> estimated_contributions;
-        for (int v = 0; v < number_of_elements; v++) {
-          if (current_selected_elements.find(v) == current_selected_elements.end()) {
-            // Contribución a los elementos ya seleccionados
-            double contribution_to_selected = 0.0;
-            for (int s : current_selected_elements) {
-              contribution_to_selected += this->distance_matrix_[s][v];
-            }
-            
-            // Contribución estimada a los elementos que seleccionaremos en el futuro
-            double sum_unselected_distances = 0.0;
-            int count = 0;
-            for (int u : this->sorted_indices_by_distance_[v]) {
-              if (current_selected_elements.find(u) == current_selected_elements.end() && u != v && 
-                  count < elements_to_select - number_of_selected - 1) {
-                sum_unselected_distances += this->distance_matrix_[v][u];
-                count++;
-              }
-            }
-            
-            double contribution_unselected = 0.5 * sum_unselected_distances;
-            double total_estimated_contribution = contribution_to_selected + contribution_unselected;
-            estimated_contributions.push_back({total_estimated_contribution, v});
-          }
-        }
-        
-        // Si hay empates en la contribución, ordenaremos por el índice del vértice
-        std::sort(estimated_contributions.begin(), estimated_contributions.end(), [](const std::pair<double, int>& a, const std::pair<double, int>& b) {
-          if (std::abs(a.first - b.first) < 1e-9) { 
-            return a.second < b.second;
-          }
-          return a.first > b.first; // Ordenar por contribución descendente
-        });
-        
-        // Calcular la cota superior
-        double upper_bound_contribution = 0.0;
-        for (int i = 0; i < elements_to_select - number_of_selected && i < estimated_contributions.size(); i++) {
-          upper_bound_contribution += estimated_contributions[i].first;
-        }
-        double upper_bound = sum_distances_within_selected + upper_bound_contribution;
-        // Determinar si debemos podar por cota superior
-        bool should_prune_by_upper_bound = (upper_bound < this->best_known_solution_value_);
-        if (!should_prune_by_upper_bound) {
-          // Generamos una solución heurística completando la solución parcial con los mejores candidatos
-          std::vector<int> top_candidates;
-          for (int i = 0; i < elements_to_select - number_of_selected && i < estimated_contributions.size(); i++) {
-            top_candidates.push_back(estimated_contributions[i].second);
-          }
-          std::set<int> heuristic_solution = current_selected_elements;
-          for (int v : top_candidates) {
-            heuristic_solution.insert(v);
-          }
-          // Evaluamos la solución heurística y actualizamos la mejor solución si es necesario
-          double heuristic_value = this->calculateObjectiveValue(heuristic_solution);
-          this->updateBestSolution(heuristic_solution, heuristic_value);
+        // Ramificar: generar nodos hijos añadiendo cada elemento no seleccionado
+        for (int v : unselected_ordered) {
+          // Crear nuevos conjuntos para el nodo hijo
+          std::set<int> new_selected = selected;
+          std::set<int> new_unselected = unselected;
           
-          std::vector<int> unselected_vertices;
-          for (int v = 0; v < number_of_elements; v++) {
-            if (current_selected_elements.find(v) == current_selected_elements.end()) {
-              unselected_vertices.push_back(v);
-            }
-          }
-          // Ordenamos los vértices por su índice
-          std::sort(unselected_vertices.begin(), unselected_vertices.end());
+          // Mover el elemento v de unselected a selected
+          new_selected.insert(v);
+          new_unselected.erase(v);
           
-          //Generar nodos hijos
-          for (int v : unselected_vertices) {
-            std::set<int> new_selected_elements = current_selected_elements;
-            new_selected_elements.insert(v);
-            exploration_stack.push({new_selected_elements, number_of_selected + 1});
-            this->nodes_generated_++; // Incrementar contador de nodos
-          }
+          // Apilar el nuevo nodo
+          exploration_stack.push({new_selected, new_unselected, level + 1});
+          this->nodes_generated_++; // Incrementar contador de nodos
         }
+      }
+      // Si UB < LB, podamos este nodo (no hacemos nada, simplemente no lo exploramos)
+    }
+  }
+  
+  // Construir la solución final a partir de best_solution_
+  this->solucion_ = EspacioVectorial();
+  if (!this->best_solution_.empty()) { // Verificar que best_solution_ no está vacía
+    for (int idx : this->best_solution_) {
+      if (idx >= 0 && idx < number_of_elements) { // Validar índices
+        this->solucion_.addPunto(this->espacio_[idx]);
       }
     }
   }
-  // Construir la solución final a partir de best_solution_
-  this->solucion_ = EspacioVectorial();
-  for (int idx : this->best_solution_) {
-    this->solucion_.addPunto(this->espacio_[idx]);
-  }
+  
   return this;
 }
 

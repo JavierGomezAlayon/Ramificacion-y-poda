@@ -50,6 +50,7 @@ class RamificacionPoda : public Algoritmo {
   // Métodos auxiliares
   void precomputeDistances();
   double calculateObjectiveValue(const std::set<int>& selected_elements);
+  double calculateUpperBound(const std::set<int>& selected_elements, const std::set<int>& unselected_elements, int elements_to_select);
   void updateBestSolution(const std::set<int>& solution, double value);
 };
 
